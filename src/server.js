@@ -4,14 +4,17 @@ import cors from "cors";
 import {
   genericErrorHandler,
   badRequestHandler,
-  unauthorizedHandler,
   notfoundHandler,
 } from "./errorsHandlers.js";
 import { join } from "path";
 import mongoose from "mongoose";
+import experiencesRouter from "./api/experiences/index.js";
+import usersRouter from "./api/users/index.js";
+import postsRouter from "./api/posts/postsIndex.js";
+import createHttpError from "http-errors";
 
 const server = Express();
-const port = 3001;
+const port = process.env.PORT;
 const publicFolderPath = join(process.cwd(), "./public");
 
 server.use(Express.static(publicFolderPath));
@@ -20,10 +23,8 @@ server.use(
   cors({
     origin: (currentOrigin, corsNext) => {
       if (!currentOrigin || whitelist.indexOf(currentOrigin) !== -1) {
-        // origin is in the whitelist
         corsNext(null, true);
       } else {
-        // origin is not in the whitelist
         corsNext(
           createHttpError(
             400,
@@ -37,11 +38,13 @@ server.use(
 server.use(Express.json());
 
 // ************************** ENDPOINTS ***********************
+server.use("/users", usersRouter);
+server.use("/users", experiencesRouter);
+server.use("/posts", postsRouter);
 
-server.use(badRequestHandler); // 400
-server.use(unauthorizedHandler); // 401
-server.use(notfoundHandler); // 404
-server.use(genericErrorHandler); // 500 (this should ALWAYS be the last one)
+server.use(badRequestHandler);
+server.use(notfoundHandler);
+server.use(genericErrorHandler);
 
 mongoose.connect(process.env.MONGO_URL);
 

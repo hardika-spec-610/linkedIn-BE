@@ -1,44 +1,33 @@
-export const badRequestHandler = (err, req, res, next) => {
-  if (err.status === 400) {
-    // This error handler is responsible for that error
-    res.status(400).send({
-      success: false,
-      message: err.message,
-      errorsList: err.errorsList.map((e) => e.msg),
-    });
-  } else {
-    // This error handler is NOT responsible for that error
-    // We should pass the error to the next in chain
-    next(err);
-  }
-};
+import mongoose from "mongoose"
 
-export const unauthorizedHandler = (err, req, res, next) => {
-  if (err.status === 401) {
-    // This error handler is responsible for that error
-    res.status(401).send({ success: false, message: err.message });
-  } else {
-    // This error handler is NOT responsible for that error
-    // We should pass the error to the next in chain
-    next(err);
-  }
-};
+export const badRequestHandler = (error, request, response, next) => {
+  if (error.status === 400 || error instanceof mongoose.Error.ValidationError) {
+    if (error.errorsList) {
+      response.status(400).send({ message: error.message, errorsList: error.errorsList.map(e => e.msg) })
 
-export const notfoundHandler = (err, req, res, next) => {
-  if (err.status === 404) {
-    // This error handler is responsible for that error
-    res.status(404).send({ success: false, message: err.message });
-  } else {
-    // This error handler is NOT responsible for that error
-    // We should pass the error to the next in chain
-    next(err);
-  }
-};
+    } else {
+      response.status(400).send({ message: error.message })
 
-export const genericErrorHandler = (err, req, res, next) => {
-  console.log("ERROR:", err);
-  res.status(500).send({
-    success: false,
-    message: "Something happened on our side! we will fix that ASAP!",
-  });
-};
+    }
+  } else if (error instanceof mongoose.Error.CastError) {
+    response.status(400).send({ message: "You've sent a wrong _id in request params" })
+  }
+  else {
+    next(error)
+  }
+}
+
+export const notfoundHandler = (error, request, response, next) => {
+  if (error.status === 404) {
+    response.status(404).send({ message: error.message })
+  } else {
+    next(error)
+  }
+}
+
+export const genericErrorHandler = (error, request, response, next) => {
+  console.log("ERROR:", error)
+  response.status(500).send({ message: "Something went wrong! Please try again later" })
+}
+
+
