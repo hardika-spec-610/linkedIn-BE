@@ -33,11 +33,11 @@ postsRouter.get("/", async (req, res, next) => {
     )
       .limit(mongoQuery.options.limit)
       .skip(mongoQuery.options.skip)
-      .sort(mongoQuery.options.sort);
-    //   .populate({
-    //     path: "users",
-    //     select: "name surname image",
-    //   });
+      .sort(mongoQuery.options.sort)
+      .populate({
+        path: "user",
+        select: "name surname image",
+      });
     const total = await PostsModel.countDocuments(mongoQuery.criteria);
     // no matter the order of usage of these methods, Mongo will ALWAYS apply SORT then SKIP then LIMIT
     res.send({
@@ -53,11 +53,10 @@ postsRouter.get("/", async (req, res, next) => {
 
 postsRouter.get("/:postId", async (req, res, next) => {
   try {
-    const posts = await PostsModel.findById(req.params.postId);
-    // .populate({
-    //   path: "users",
-    //   select: "name surname image",
-    // });
+    const posts = await PostsModel.findById(req.params.postId).populate({
+      path: "user",
+      select: "name surname image",
+    });
     if (posts) {
       res.send(posts);
     } else {
