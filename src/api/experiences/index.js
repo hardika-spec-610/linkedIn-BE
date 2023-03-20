@@ -2,7 +2,9 @@ import Express from "express";
 import createHttpError from "http-errors";
 import mongoose from "mongoose";
 import ExperiencesModel from './model.js'
-
+import multer from "multer";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { v2 as cloudinary } from "cloudinary";
 const experiencesRouter = Express.Router()
 
 experiencesRouter.get("/:userId/experiences", async (request, response, next) => {
@@ -66,5 +68,30 @@ experiencesRouter.delete("/:userId/experiences/:expId", async (request, response
         next(error)
     }
 })
+
+const cloudinaryUploader = multer({
+    storage: new CloudinaryStorage({
+        cloudinary,
+        params: {
+            folder: "fs0522/experiences"
+        }
+    })
+}).single('experience')
+
+
+experiencesRouter.post("/:userId/experiences/:expId/image", cloudinaryUploader, async (request, response, next) => {
+    try {
+        const updatedExperience = await ExperiencesModel.findByIdAndUpdate(
+            request.params.expId,
+            { image: request.file.path },
+            { new: true, runValidators: true }
+        )
+
+        response.send(updatedExperience)
+    } catch (error) {
+        next(error)
+    }
+})
+
 
 export default experiencesRouter
