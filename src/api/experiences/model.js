@@ -16,7 +16,8 @@ const experienceSchema = new Schema({
         required: true
     },
     endDate: {
-        type: Date
+        type: Date,
+        default: null
     },
     area: {
         type: String,
