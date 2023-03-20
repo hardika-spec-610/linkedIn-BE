@@ -9,6 +9,7 @@ import {
 } from "./errorsHandlers.js";
 import { join } from "path";
 import mongoose from "mongoose";
+import postsRouter from "./api/posts/postsIndex.js";
 
 const server = Express();
 const port = 3001;
@@ -37,6 +38,8 @@ server.use(
 server.use(Express.json());
 
 // ************************** ENDPOINTS ***********************
+
+server.use("/posts", postsRouter);
 
 server.use(badRequestHandler); // 400
 server.use(unauthorizedHandler); // 401
