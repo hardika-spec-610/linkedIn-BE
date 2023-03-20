@@ -2,7 +2,8 @@ import express from "express"
 import createHttpError from "http-errors";
 import UsersModel from "./model.js"
 import q2m from "query-to-mongo"
-import { getUserCVReadableStream } from "./pdf.js";
+import { getUserCVReadableStream } from "./pdfGenerator.js";
+import Experience from "../experiences/model.js"
 import upload from "./cloudinaryConfig.js";
 
 const usersRouter = express.Router()
@@ -99,14 +100,13 @@ usersRouter.post("/:userId/image", upload.single("image"), async (req, res, next
     }
 });
 
-
 // -GET- Generates and download a PDF with the CV of the user (details, image, experiences)
 usersRouter.get("/:userId/CV", async (req, res, next) => {
     try {
         const user = await UsersModel.findById(req.params.userId);
         if (user) {
             // Generate the PDF with the user's CV (details, image, experiences)
-            const pdfReadableStream = getUserCVReadableStream(user);
+            const pdfReadableStream = await getUserCVReadableStream(user, Experience);
 
             // Set the response headers
             res.setHeader("Content-Type", "application/pdf");

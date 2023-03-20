@@ -20,21 +20,6 @@ const userSchema = new Schema(
         title: { type: String, required: true },
         area: { type: String, required: true },
         image: { type: String },
-        skills: [
-            {
-                name: { type: String },
-                level: { type: String },
-            },
-        ],
-        education: [
-            {
-                institution: { type: String },
-                degree: { type: String },
-                fieldOfStudy: { type: String },
-                startDate: { type: Date },
-                endDate: { type: Date },
-            },
-        ],
     },
     {
         timestamps: true,

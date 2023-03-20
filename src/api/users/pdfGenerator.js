@@ -1,6 +1,8 @@
 import PdfPrinter from "pdfmake";
+import { format } from "date-fns";
 
-export const getUserCVReadableStream = (user) => {
+
+export const getUserCVReadableStream = async (user, Experience) => {
     // Define font files
     const fonts = {
         Courier: {
@@ -19,9 +21,21 @@ export const getUserCVReadableStream = (user) => {
 
     const printer = new PdfPrinter(fonts);
 
-    const experiences = user.experiences || [];
+    // Fetch the experiences associated with the user
+    const experiences = await Experience.find({ user: user._id });
+
+
     const skills = user.skills || [];
     const education = user.education || [];
+
+    const address = user.address || {};
+    const addressString = [
+        address.street,
+        address.city,
+        address.state,
+        address.zip,
+        address.country,
+    ].filter((value) => value).join(", ");
 
     const content = [
         {
@@ -30,40 +44,20 @@ export const getUserCVReadableStream = (user) => {
                 { text: user.email, style: "email", alignment: "right" },
             ],
         },
-        { text: user.phoneNumber, style: "subheader" },
-        { text: `${user.address.street}, ${user.address.city}, ${user.address.state}, ${user.address.zip}, ${user.address.country}`, style: "subheader" },
-        { text: user.website, style: "subheader", link: user.website },
+        user.phoneNumber ? { text: user.phoneNumber, style: "subheader" } : {},
+        addressString ? { text: addressString, style: "subheader" } : {},
+        user.website ? { text: user.website, style: "subheader", link: user.website } : {},
         { text: user.title, style: "subheader" },
         { text: user.area, style: "subheader" },
-        { text: "Skills", style: "sectionTitle", margin: [0, 20, 0, 10] },
-        ...skills.map((skill, index) => ([
-            {
-                text: `${skill.name}: ${skill.level}`,
-                style: "skills",
-                margin: index === 0 ? [0, 0, 0, 5] : [0, 5, 0, 5],
-            },
-        ])),
-        { text: "Education", style: "sectionTitle", margin: [0, 20, 0, 10] },
-        ...education.map((edu, index) => ([
-            {
-                text: `${edu.degree} - ${edu.institution}`,
-                style: "educationTitle",
-                margin: index === 0 ? [0, 0, 0, 5] : [0, 10, 0, 5],
-            },
-            {
-                text: `${edu.fieldOfStudy} | ${edu.startDate} - ${edu.endDate || 'Present'}`,
-                style: "educationDate",
-            },
-        ])),
         { text: "Experiences", style: "sectionTitle", margin: [0, 20, 0, 10] },
         ...experiences.map((experience, index) => ([
             {
-                text: `${experience.position} at ${experience.company}`,
+                text: `${experience.role} at ${experience.company}`,
                 style: "experienceTitle",
                 margin: index === 0 ? [0, 0, 0, 5] : [0, 10, 0, 5],
             },
             {
-                text: `${experience.startDate} - ${experience.endDate || 'Present'}`,
+                text: `${format(experience.startDate, "dd/MM/yyyy")} - ${experience.endDate ? format(experience.endDate, "dd/MM/yyyy") : 'Present'}`,
                 style: "experienceDate",
             },
             { text: experience.description, style: "experience" },
