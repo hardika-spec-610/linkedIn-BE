@@ -4,11 +4,11 @@ import cors from "cors";
 import {
   genericErrorHandler,
   badRequestHandler,
-  unauthorizedHandler,
   notfoundHandler,
 } from "./errorsHandlers.js";
 import { join } from "path";
 import mongoose from "mongoose";
+import experiencesRouter from "./api/experiences/index.js";
 
 const server = Express();
 const port = 3001;
@@ -20,10 +20,8 @@ server.use(
   cors({
     origin: (currentOrigin, corsNext) => {
       if (!currentOrigin || whitelist.indexOf(currentOrigin) !== -1) {
-        // origin is in the whitelist
         corsNext(null, true);
       } else {
-        // origin is not in the whitelist
         corsNext(
           createHttpError(
             400,
@@ -38,10 +36,13 @@ server.use(Express.json());
 
 // ************************** ENDPOINTS ***********************
 
-server.use(badRequestHandler); // 400
-server.use(unauthorizedHandler); // 401
-server.use(notfoundHandler); // 404
-server.use(genericErrorHandler); // 500 (this should ALWAYS be the last one)
+
+server.use("/users", experiencesRouter)
+
+
+server.use(badRequestHandler);
+server.use(notfoundHandler);
+server.use(genericErrorHandler);
 
 mongoose.connect(process.env.MONGO_URL);
 
