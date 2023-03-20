@@ -10,6 +10,8 @@ import { join } from "path";
 import mongoose from "mongoose";
 import experiencesRouter from "./api/experiences/index.js";
 import usersRouter from "./api/users/index.js";
+import postsRouter from "./api/posts/postsIndex.js";
+import createHttpError from "http-errors";
 
 const server = Express();
 const port = process.env.PORT;
@@ -36,11 +38,9 @@ server.use(
 server.use(Express.json());
 
 // ************************** ENDPOINTS ***********************
-server.use("/users", usersRouter)
-
-
-server.use("/users", experiencesRouter)
-
+server.use("/users", usersRouter);
+server.use("/users", experiencesRouter);
+server.use("/posts", postsRouter);
 
 server.use(badRequestHandler);
 server.use(notfoundHandler);
