@@ -56,7 +56,6 @@ experiencesRouter.get("/:userId/experiences/CSV", async (request, response, next
 experiencesRouter.get("/:userId/experiences", async (request, response, next) => {
     try {
         const mongoQuery = q2m(request.query)
-        console.log(mongoQuery)
         const experiences = await ExperiencesModel.find({ user: new mongoose.Types.ObjectId(request.params.userId) })
             .select(mongoQuery.options.fields)
             .skip(mongoQuery.options.skip)
