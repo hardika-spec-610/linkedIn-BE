@@ -10,6 +10,7 @@ import {
 import { join } from "path";
 import mongoose from "mongoose";
 import postsRouter from "./api/posts/postsIndex.js";
+import createHttpError from "http-errors";
 
 const server = Express();
 const port = 3001;
