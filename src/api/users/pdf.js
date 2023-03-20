@@ -20,6 +20,8 @@ export const getUserCVReadableStream = (user) => {
     const printer = new PdfPrinter(fonts);
 
     const experiences = user.experiences || [];
+    const skills = user.skills || [];
+    const education = user.education || [];
 
     const content = [
         {
@@ -28,8 +30,31 @@ export const getUserCVReadableStream = (user) => {
                 { text: user.email, style: "email", alignment: "right" },
             ],
         },
+        { text: user.phoneNumber, style: "subheader" },
+        { text: `${user.address.street}, ${user.address.city}, ${user.address.state}, ${user.address.zip}, ${user.address.country}`, style: "subheader" },
+        { text: user.website, style: "subheader", link: user.website },
         { text: user.title, style: "subheader" },
         { text: user.area, style: "subheader" },
+        { text: "Skills", style: "sectionTitle", margin: [0, 20, 0, 10] },
+        ...skills.map((skill, index) => ([
+            {
+                text: `${skill.name}: ${skill.level}`,
+                style: "skills",
+                margin: index === 0 ? [0, 0, 0, 5] : [0, 5, 0, 5],
+            },
+        ])),
+        { text: "Education", style: "sectionTitle", margin: [0, 20, 0, 10] },
+        ...education.map((edu, index) => ([
+            {
+                text: `${edu.degree} - ${edu.institution}`,
+                style: "educationTitle",
+                margin: index === 0 ? [0, 0, 0, 5] : [0, 10, 0, 5],
+            },
+            {
+                text: `${edu.fieldOfStudy} | ${edu.startDate} - ${edu.endDate || 'Present'}`,
+                style: "educationDate",
+            },
+        ])),
         { text: "Experiences", style: "sectionTitle", margin: [0, 20, 0, 10] },
         ...experiences.map((experience, index) => ([
             {
@@ -68,6 +93,18 @@ export const getUserCVReadableStream = (user) => {
             sectionTitle: {
                 fontSize: 16,
                 bold: true,
+            },
+            skills: {
+                fontSize: 14,
+            },
+            educationTitle: {
+                fontSize: 14,
+                bold: true,
+            },
+            educationDate: {
+                fontSize: 14,
+                italics: true,
+                margin: [0, 0, 0, 5],
             },
             experienceTitle: {
                 fontSize: 14,
