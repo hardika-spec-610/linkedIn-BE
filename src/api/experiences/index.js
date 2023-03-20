@@ -8,6 +8,7 @@ import { v2 as cloudinary } from "cloudinary";
 import { pipeline, Readable } from 'stream'
 import { stringify } from 'csv-stringify';
 import { format } from "date-fns";
+import q2m from 'query-to-mongo'
 
 
 
@@ -54,10 +55,14 @@ experiencesRouter.get("/:userId/experiences/CSV", async (request, response, next
 
 experiencesRouter.get("/:userId/experiences", async (request, response, next) => {
     try {
-        const experiences = await ExperiencesModel.find()
-        const foundExperiences = experiences.filter(exp => exp.user.toString() === request.params.userId)
-        if (!foundExperiences) return next(createHttpError(404, `User with _id ${request.params.userId} has no experiences yet!`))
-        response.send(foundExperiences)
+        const mongoQuery = q2m(request.query)
+        console.log(mongoQuery)
+        const experiences = await ExperiencesModel.find({ user: new mongoose.Types.ObjectId(request.params.userId) })
+            .select(mongoQuery.options.fields)
+            .skip(mongoQuery.options.skip)
+            .limit(mongoQuery.options.limit)
+            .sort(mongoQuery.options.sort)
+        response.send(experiences)
     } catch (error) {
         next(error)
     }
