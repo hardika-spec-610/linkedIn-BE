@@ -5,7 +5,52 @@ import ExperiencesModel from './model.js'
 import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { v2 as cloudinary } from "cloudinary";
+import { pipeline, Readable } from 'stream'
+import { stringify } from 'csv-stringify';
+import { format } from "date-fns";
+
+
+
 const experiencesRouter = Express.Router()
+
+
+experiencesRouter.get("/:userId/experiences/CSV", async (request, response, next) => {
+    try {
+        const experiences = await ExperiencesModel.find();
+        const foundExperiences = experiences.filter(exp => exp.user.toString() === request.params.userId);
+
+        const experiencesReadableStream = new Readable({
+            objectMode: true,
+            read() {
+                foundExperiences.forEach(exp => {
+                    const formattedExp = exp.toObject();
+                    formattedExp.startDate = format(new Date(exp.startDate), 'dd.MM.yyyy');
+                    formattedExp.endDate ? format(new Date(exp.endDate), 'dd.MM.yyyy') : null;
+                    this.push(formattedExp);
+                });
+                this.push(null);
+            }
+        });
+
+        const csvTransform = stringify({
+            header: true,
+            columns: ['role', 'company', 'area', 'startDate', 'endDate']
+        });
+
+        response.setHeader('Content-Disposition', `attachment; filename=experiences${request.params.userId}.csv`);
+
+        const source = experiencesReadableStream
+        const transform = csvTransform
+        const destination = response
+
+        pipeline(source, transform, destination, error => {
+            if (error) console.error(error);
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
 
 experiencesRouter.get("/:userId/experiences", async (request, response, next) => {
     try {
@@ -69,6 +114,8 @@ experiencesRouter.delete("/:userId/experiences/:expId", async (request, response
     }
 })
 
+
+
 const cloudinaryUploader = multer({
     storage: new CloudinaryStorage({
         cloudinary,
@@ -92,6 +139,8 @@ experiencesRouter.post("/:userId/experiences/:expId/image", cloudinaryUploader, 
         next(error)
     }
 })
+
+
 
 
 export default experiencesRouter
