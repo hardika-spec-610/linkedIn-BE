@@ -35,13 +35,6 @@ const userSchema = new Schema(
                 endDate: { type: Date },
             },
         ],
-        experience: [
-            {
-                type: Schema.Types.ObjectId,
-                ref: "Experience",
-                required: true,
-            },
-        ],
     },
     {
         timestamps: true,
