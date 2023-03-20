@@ -17,16 +17,15 @@ const experiencesRouter = Express.Router()
 
 experiencesRouter.get("/:userId/experiences/CSV", async (request, response, next) => {
     try {
-        const experiences = await ExperiencesModel.find();
-        const foundExperiences = experiences.filter(exp => exp.user.toString() === request.params.userId);
+        const experiences = await ExperiencesModel.find({ user: new mongoose.Types.ObjectId(request.params.userId) });
 
         const experiencesReadableStream = new Readable({
             objectMode: true,
             read() {
-                foundExperiences.forEach(exp => {
+                experiences.forEach(exp => {
                     const formattedExp = exp.toObject();
                     formattedExp.startDate = format(new Date(exp.startDate), 'dd.MM.yyyy');
-                    formattedExp.endDate ? format(new Date(exp.endDate), 'dd.MM.yyyy') : null;
+                    formattedExp.endDate = formattedExp.endDate ? format(new Date(exp.endDate), 'dd.MM.yyyy') : null;
                     this.push(formattedExp);
                 });
                 this.push(null);
@@ -40,11 +39,7 @@ experiencesRouter.get("/:userId/experiences/CSV", async (request, response, next
 
         response.setHeader('Content-Disposition', `attachment; filename=experiences${request.params.userId}.csv`);
 
-        const source = experiencesReadableStream
-        const transform = csvTransform
-        const destination = response
-
-        pipeline(source, transform, destination, error => {
+        pipeline(experiencesReadableStream, csvTransform, response, error => {
             if (error) console.error(error);
         });
     } catch (error) {
