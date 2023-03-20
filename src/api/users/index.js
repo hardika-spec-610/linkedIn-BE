@@ -3,6 +3,7 @@ import createHttpError from "http-errors";
 import UsersModel from "./model.js"
 import q2m from "query-to-mongo"
 import { getUserCVReadableStream } from "./pdf.js";
+import upload from "./cloudinaryConfig.js";
 
 const usersRouter = express.Router()
 
@@ -74,27 +75,29 @@ usersRouter.put("/:userId", async (req, res, next) => {
     }
 });
 
-/*
+
 // -POST- Replace user profile image
-usersRouter.post("/:userId/image",  Add middleware to handle image uploading, e.g., multer , async (req, res, next) => {
+usersRouter.post("/:userId/image", upload.single("image"), async (req, res, next) => {
     try {
-      // Add your logic to handle the uploaded image, store it, and update the user's image field
-      const updatedUser = await UsersModel.findByIdAndUpdate(
-        req.params.userId,
-        { image:  image URL or path  },
-        { new: true }
-      );
-  
-      if (updatedUser) {
-        res.send(updatedUser);
-      } else {
-        next(createHttpError(404, `User with id ${req.params.userId} not found!`));
-      }
+        if (req.file) {
+            const updatedUser = await UsersModel.findByIdAndUpdate(
+                req.params.userId,
+                { image: req.file.path },
+                { new: true }
+            );
+
+            if (updatedUser) {
+                res.send(updatedUser);
+            } else {
+                next(createHttpError(404, `User with id ${req.params.userId} not found!`));
+            }
+        } else {
+            next(createHttpError(400, "Image file is missing"));
+        }
     } catch (error) {
-      next(error);
+        next(error);
     }
-  });
-  */
+});
 
 
 // -GET- Generates and download a PDF with the CV of the user (details, image, experiences)

@@ -10,7 +10,12 @@ const userSchema = new Schema(
         bio: { type: String, required: true },
         title: { type: String, required: true },
         area: { type: String, required: true },
-        image: { type: String, default: "default-image-url" }, // replace "default-image-url" with the actual default image URL
+        image: { type: String },
+        experince: [{
+            type: Schema.Types.ObjectId,
+            ref: "experince",
+            required: true
+        }],
     },
     {
         timestamps: true,
