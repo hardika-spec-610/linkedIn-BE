@@ -9,9 +9,10 @@ import {
 import { join } from "path";
 import mongoose from "mongoose";
 import experiencesRouter from "./api/experiences/index.js";
+import usersRouter from "./api/users/index.js";
 
 const server = Express();
-const port = 3001;
+const port = process.env.PORT;
 const publicFolderPath = join(process.cwd(), "./public");
 
 server.use(Express.static(publicFolderPath));
@@ -35,6 +36,7 @@ server.use(
 server.use(Express.json());
 
 // ************************** ENDPOINTS ***********************
+server.use("/users", usersRouter)
 
 
 server.use("/users", experiencesRouter)
