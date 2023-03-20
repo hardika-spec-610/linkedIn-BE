@@ -9,9 +9,10 @@ import {
 } from "./errorsHandlers.js";
 import { join } from "path";
 import mongoose from "mongoose";
+import usersRouter from "./api/users/index.js";
 
 const server = Express();
-const port = 3001;
+const port = process.env.PORT;
 const publicFolderPath = join(process.cwd(), "./public");
 
 server.use(Express.static(publicFolderPath));
@@ -37,6 +38,7 @@ server.use(
 server.use(Express.json());
 
 // ************************** ENDPOINTS ***********************
+server.use("/users", usersRouter)
 
 server.use(badRequestHandler); // 400
 server.use(unauthorizedHandler); // 401
