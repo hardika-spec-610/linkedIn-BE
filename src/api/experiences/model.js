@@ -26,7 +26,6 @@ const experienceSchema = new Schema({
     image: {
         type: String,
         default: "https://cdn-icons-png.flaticon.com/512/993/993928.png",
-        required: true
     },
     user: { type: mongoose.Types.ObjectId, ref: "User" }
 }, { timestamps: true })
