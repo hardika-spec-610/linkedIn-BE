@@ -6,12 +6,16 @@ const postSchema = new Schema(
   {
     text: { type: String, required: true },
     image: {
-      default:
-        "https://cdn.pixabay.com/photo/2018/03/22/02/37/email-3249062__340.png",
+      // default:
+      //   "https://cdn.pixabay.com/photo/2018/03/22/02/37/email-3249062__340.png",
       type: String,
-      required: true,
+      // required: true,
     },
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    likes: {
+      default: [],
+      type: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    },
   },
   {
     timestamps: true,

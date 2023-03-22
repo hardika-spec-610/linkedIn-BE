@@ -5,6 +5,7 @@ import q2m from "query-to-mongo";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
+import UsersModal from "../users/model.js";
 
 const postsRouter = Express.Router();
 
@@ -36,7 +37,7 @@ postsRouter.get("/", async (req, res, next) => {
       .sort(mongoQuery.options.sort)
       .populate({
         path: "user",
-        select: "name surname image",
+        select: "name surname image title",
       });
     const total = await PostsModel.countDocuments(mongoQuery.criteria);
     // no matter the order of usage of these methods, Mongo will ALWAYS apply SORT then SKIP then LIMIT
@@ -55,7 +56,7 @@ postsRouter.get("/:postId", async (req, res, next) => {
   try {
     const posts = await PostsModel.findById(req.params.postId).populate({
       path: "user",
-      select: "name surname image",
+      select: "name surname image title",
     });
     if (posts) {
       res.send(posts);
@@ -135,5 +136,46 @@ postsRouter.post(
     }
   }
 );
+
+postsRouter.post("/:postId/like", async (req, res, next) => {
+  try {
+    const { userId } = req.body;
+    const post = await PostsModel.findById(req.params.postId);
+    if (!post)
+      return next(
+        createHttpError(404, `Post with id ${req.params.postId} not found`)
+      );
+    const user = await UsersModal.findById(userId);
+    console.log("user", user);
+    if (!user)
+      return next(createHttpError(404, `User with id ${userId} not found`));
+    console.log("User", userId);
+
+    if (post.likes.includes(userId)) {
+      const deleteLikes = await PostsModel.findOneAndUpdate(
+        { _id: req.params.postId },
+        { $pull: { likes: userId } },
+        { new: true, runValidators: true }
+      );
+      res.send({
+        deleteLikes,
+        length: deleteLikes.likes.length,
+      });
+    } else {
+      const updatedPost = await PostsModel.findOneAndUpdate(
+        { _id: req.params.postId },
+        { $push: { likes: userId } },
+        { new: true, runValidators: true, upsert: true }
+      );
+      console.log("updatedPost", updatedPost);
+      res.send({
+        updatedPost,
+        length: updatedPost.likes.length,
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
 
 export default postsRouter;
