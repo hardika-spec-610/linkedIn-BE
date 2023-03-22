@@ -12,6 +12,7 @@ import experiencesRouter from "./api/experiences/index.js";
 import usersRouter from "./api/users/index.js";
 import postsRouter from "./api/posts/postsIndex.js";
 import createHttpError from "http-errors";
+import commentsRouter from "./api/comments/index.js";
 
 const server = Express();
 const port = process.env.PORT;
@@ -41,6 +42,7 @@ server.use(Express.json());
 server.use("/users", usersRouter);
 server.use("/users", experiencesRouter);
 server.use("/posts", postsRouter);
+server.use("/posts", commentsRouter)
 
 server.use(badRequestHandler);
 server.use(notfoundHandler);
