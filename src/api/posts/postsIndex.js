@@ -24,8 +24,6 @@ postsRouter.post("/", async (req, res, next) => {
 
 postsRouter.get("/", async (req, res, next) => {
   try {
-    console.log("req.query", req.query);
-    console.log("q2m", q2m(req.query));
     const mongoQuery = q2m(req.query);
     //  price: '>10' should be converted somehow into price: {$gt: 10}
     const posts = await PostsModel.find(
