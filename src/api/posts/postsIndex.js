@@ -5,6 +5,7 @@ import q2m from "query-to-mongo";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import multer from "multer";
+import UsersModal from "../users/model.js";
 
 const postsRouter = Express.Router();
 
@@ -23,8 +24,6 @@ postsRouter.post("/", async (req, res, next) => {
 
 postsRouter.get("/", async (req, res, next) => {
   try {
-    console.log("req.query", req.query);
-    console.log("q2m", q2m(req.query));
     const mongoQuery = q2m(req.query);
     //  price: '>10' should be converted somehow into price: {$gt: 10}
     const posts = await PostsModel.find(
@@ -34,10 +33,16 @@ postsRouter.get("/", async (req, res, next) => {
       .limit(mongoQuery.options.limit)
       .skip(mongoQuery.options.skip)
       .sort(mongoQuery.options.sort)
-      .populate({
-        path: "user",
-        select: "name surname image",
-      });
+      .populate([
+        {
+          path: "user",
+          select: "name surname image title",
+        },
+        {
+          path: "likes",
+          select: "name surname image title",
+        },
+      ]);
     const total = await PostsModel.countDocuments(mongoQuery.criteria);
     // no matter the order of usage of these methods, Mongo will ALWAYS apply SORT then SKIP then LIMIT
     res.send({
@@ -53,10 +58,16 @@ postsRouter.get("/", async (req, res, next) => {
 
 postsRouter.get("/:postId", async (req, res, next) => {
   try {
-    const posts = await PostsModel.findById(req.params.postId).populate({
-      path: "user",
-      select: "name surname image",
-    });
+    const posts = await PostsModel.findById(req.params.postId).populate([
+      {
+        path: "user",
+        select: "name surname image title",
+      },
+      {
+        path: "likes",
+        select: "name surname image title",
+      },
+    ]);
     if (posts) {
       res.send(posts);
     } else {
@@ -135,5 +146,67 @@ postsRouter.post(
     }
   }
 );
+postsRouter.get("/:postId/like", async (req, res, next) => {
+  try {
+    const post = await PostsModel.findById(req.params.postId).populate([
+      {
+        path: "user",
+        select: "name surname image title",
+      },
+      {
+        path: "likes",
+        select: "name surname image title",
+      },
+    ]);
+    if (post) {
+      res.send(post);
+    } else {
+      next(createHttpError(404, `Post with id ${req.params.postId} not found`));
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+postsRouter.post("/:postId/like", async (req, res, next) => {
+  try {
+    const { userId } = req.body;
+    const post = await PostsModel.findById(req.params.postId);
+    if (!post)
+      return next(
+        createHttpError(404, `Post with id ${req.params.postId} not found`)
+      );
+    const user = await UsersModal.findById(userId);
+    console.log("user", user);
+    if (!user)
+      return next(createHttpError(404, `User with id ${userId} not found`));
+    console.log("User", userId);
+
+    if (post.likes.includes(userId)) {
+      const deleteLikes = await PostsModel.findOneAndUpdate(
+        { _id: req.params.postId },
+        { $pull: { likes: userId } },
+        { new: true, runValidators: true }
+      );
+      res.send({
+        deleteLikes,
+        length: deleteLikes.likes.length,
+      });
+    } else {
+      const updatedPost = await PostsModel.findOneAndUpdate(
+        { _id: req.params.postId },
+        { $push: { likes: userId } },
+        { new: true, runValidators: true, upsert: true }
+      );
+      console.log("updatedPost", updatedPost);
+      res.send({
+        updatedPost,
+        length: updatedPost.likes.length,
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
 
 export default postsRouter;
