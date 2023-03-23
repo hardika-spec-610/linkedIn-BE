@@ -22,12 +22,11 @@ const userSchema = new Schema(
         image: { type: String },
         receivedRequests: {
             pending: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-            connected: [{ type: Schema.Types.ObjectId, ref: 'User' }],
         },
         sendRequests: {
             pending: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-            connected: [{ type: Schema.Types.ObjectId, ref: 'User' }]
-        }
+        },
+        connected: [{ type: Schema.Types.ObjectId, ref: 'User' }]
     },
     {
         timestamps: true,
@@ -35,4 +34,3 @@ const userSchema = new Schema(
 );
 
 export default model("User", userSchema);
-

@@ -76,7 +76,6 @@ usersRouter.put("/:userId", async (req, res, next) => {
     }
 });
 
-
 // -POST- Replace user profile image
 usersRouter.post("/:userId/image", upload.single("image"), async (req, res, next) => {
     try {
@@ -125,9 +124,9 @@ usersRouter.get("/:userId/CV", async (req, res, next) => {
 // -GET- Retrieves all received friend requests for the user with userId = {userId}
 usersRouter.get("/:userId/receivedRequests", async (req, res, next) => {
     try {
-        const user = await UsersModel.findById(req.params.userId).populate("receivedRequests.pending receivedRequests.connected");
+        const user = await UsersModel.findById(req.params.userId, "receivedRequests.pending").populate("receivedRequests.pending", "name surname email title area image");
         if (user) {
-            res.send(user.receivedRequests);
+            res.send(user.receivedRequests.pending);
         } else {
             next(createHttpError(404, `User with id ${req.params.userId} not found!`));
         }
@@ -139,9 +138,9 @@ usersRouter.get("/:userId/receivedRequests", async (req, res, next) => {
 // -GET- Retrieves all sent friend requests for the user with userId = {userId}
 usersRouter.get("/:userId/sentRequests", async (req, res, next) => {
     try {
-        const user = await UsersModel.findById(req.params.userId).populate("sendRequests.pending sendRequests.connected");
+        const user = await UsersModel.findById(req.params.userId, "sendRequests.pending").populate("sendRequests.pending", "name surname email title area image");
         if (user) {
-            res.send(user.sendRequests);
+            res.send(user.sendRequests.pending);
         } else {
             next(createHttpError(404, `User with id ${req.params.userId} not found!`));
         }
@@ -149,6 +148,9 @@ usersRouter.get("/:userId/sentRequests", async (req, res, next) => {
         next(error);
     }
 });
+
+
+
 
 
 export default usersRouter
