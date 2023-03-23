@@ -149,6 +149,19 @@ usersRouter.get("/:userId/sentRequests", async (req, res, next) => {
     }
 });
 
+// -GET- Retrieves all connections a user has for the user with userId = {userId}
+usersRouter.get("/:userId/connections", async (req, res, next) => {
+    try {
+        const user = await UsersModel.findById(req.params.userId, "connected").populate("connected", "name surname email title area image");
+        if (user) {
+            res.send(user.connected);
+        } else {
+            next(createHttpError(404, `User with id ${req.params.userId} not found!`));
+        }
+    } catch (error) {
+        next(error);
+    }
+});
 
 
 
