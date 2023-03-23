@@ -151,5 +151,44 @@ usersRouter.get("/:userId/sentRequests", async (req, res, next) => {
 });
 
 
+
+
+usersRouter.post("/:userId/manageRequest", async (request, response, next) => {
+    try {
+        const { action, senderId } = request.body
+
+
+        if (action) {
+            const user = await UsersModel.findByIdAndUpdate(
+                request.params.userId,
+                { $pull: { "receivedRequests.pending": senderId }, $push: { connected: senderId } },
+                { new: true, runValidators: true }
+            )
+            const sender = await UsersModel.findByIdAndUpdate(
+                senderId,
+                { $pull: { "sendRequests.pending": request.params.userId }, $push: { connected: request.params.userId } },
+                { new: true, runValidators: true }
+            )
+            response.send({ user, sender })
+        } else {
+            const user = await UsersModel.findByIdAndUpdate(
+                request.params.userId,
+                { $pull: { "receivedRequests.pending": senderId } },
+                { new: true, runValidators: true }
+            )
+            const sender = await UsersModel.findByIdAndUpdate(
+                senderId,
+                { $pull: { "sendRequests.pending": request.params.userId } },
+                { new: true, runValidators: true }
+            )
+            response.send({ user, sender })
+        }
+    } catch (error) {
+        next(error)
+    }
+})
+
+
+
 export default usersRouter
 
