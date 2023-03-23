@@ -146,6 +146,27 @@ postsRouter.post(
     }
   }
 );
+postsRouter.get("/:postId/like", async (req, res, next) => {
+  try {
+    const post = await PostsModel.findById(req.params.postId).populate([
+      {
+        path: "user",
+        select: "name surname image title",
+      },
+      {
+        path: "likes",
+        select: "name surname image title",
+      },
+    ]);
+    if (post) {
+      res.send(post);
+    } else {
+      next(createHttpError(404, `Post with id ${req.params.postId} not found`));
+    }
+  } catch (error) {
+    next(error);
+  }
+});
 
 postsRouter.post("/:postId/like", async (req, res, next) => {
   try {
