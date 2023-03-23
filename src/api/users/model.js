@@ -20,6 +20,14 @@ const userSchema = new Schema(
         title: { type: String, required: true },
         area: { type: String, required: true },
         image: { type: String },
+        receivedRequests: {
+            pending: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+            connected: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+        },
+        sendRequests: {
+            pending: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+            connected: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+        }
     },
     {
         timestamps: true,
