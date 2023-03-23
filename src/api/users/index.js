@@ -122,5 +122,34 @@ usersRouter.get("/:userId/CV", async (req, res, next) => {
     }
 });
 
+// -GET- Retrieves all received friend requests for the user with userId = {userId}
+usersRouter.get("/:userId/receivedRequests", async (req, res, next) => {
+    try {
+        const user = await UsersModel.findById(req.params.userId).populate("receivedRequests.pending receivedRequests.connected");
+        if (user) {
+            res.send(user.receivedRequests);
+        } else {
+            next(createHttpError(404, `User with id ${req.params.userId} not found!`));
+        }
+    } catch (error) {
+        next(error);
+    }
+});
+
+// -GET- Retrieves all sent friend requests for the user with userId = {userId}
+usersRouter.get("/:userId/sentRequests", async (req, res, next) => {
+    try {
+        const user = await UsersModel.findById(req.params.userId).populate("sendRequests.pending sendRequests.connected");
+        if (user) {
+            res.send(user.sendRequests);
+        } else {
+            next(createHttpError(404, `User with id ${req.params.userId} not found!`));
+        }
+    } catch (error) {
+        next(error);
+    }
+});
+
+
 export default usersRouter
 
